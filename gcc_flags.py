@@ -13,7 +13,7 @@ from termcolor import colored
 
 
 def get_help_strings(binary: str) -> Dict[str, str]:
-    # collect all warnings from g++
+    """collect the help output for the warnings"""
     with subprocess.Popen([binary, '--help=warnings'],
                           stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) as proc:
         output = proc.stdout.read().decode('utf-8')
@@ -34,9 +34,9 @@ def get_help_strings(binary: str) -> Dict[str, str]:
 
 
 def test_compile_with_option(binary: str, option: str) -> Tuple[int, str]:
+    """compile a test program to check if the parameter works"""
     options = option.split()
 
-    # compile a test program to check if the parameter works
     with tempfile.TemporaryDirectory() as tmpdir:
         with subprocess.Popen([binary, '-x', 'c++'] + options + ['-'],
                               stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
@@ -49,7 +49,7 @@ def test_compile_with_option(binary: str, option: str) -> Tuple[int, str]:
 
 
 def get_all_options(binary: str) -> List[str]:
-    # collect all warnings from g++
+    """collect all supported warnings from g++"""
     with subprocess.Popen([binary, '-Q', '--help=warnings'],
                           stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) as proc:
         output = proc.stdout.read().decode('utf-8')
@@ -84,6 +84,8 @@ class EvaluatedOption:
 
 
 def process(binary: str):
+    """collect all working warnings from g++"""
+
     help_strings = get_help_strings(binary)
     all_options = get_all_options(binary)
     max_option_len = max(len(option) for option in all_options)
