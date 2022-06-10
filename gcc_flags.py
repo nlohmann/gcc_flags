@@ -24,7 +24,7 @@ def get_help_strings(binary: str) -> Dict[str, str]:
     result = {}  # type: Dict[str, str]
 
     # option, followed by help, and possible additional help in second line
-    for match in re.findall(r'[ ]+(-[^ ]+)[ ]+([^\n]+)(\n {2}[^-][ ]*([^\n]+))*', output):
+    for match in re.findall(r' +(-[^ ]+) +([^\n]+)(\n {2}[^-] *([^\n]+))*', output):
         option, help1, _, help2 = match
 
         # combine help lines
@@ -120,7 +120,7 @@ def process(binary: str):
         if return_code != 0 or len(error_output) > 0:
             # ignore options that do not work with C++
             if 'not for C++' in error_output:
-                error_msg = error_output[error_output.index('is valid') + 3:]
+                error_msg = error_output[error_output.index('is valid') + len('is '):]
                 print(colored(f'✘ {error_msg}', 'red'))
                 continue
 
