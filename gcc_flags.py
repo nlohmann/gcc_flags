@@ -19,7 +19,7 @@ def get_help_strings(binary: str) -> Dict[str, str]:
     proc.wait()
     output = proc.stdout.read().decode('utf-8')
 
-    result = dict()  # type: Dict[str, str]
+    result = {}  # type: Dict[str, str]
 
     # option, followed by help, and possible additional help in second line
     for match in re.findall(r'[ ]+(-[^ ]+)[ ]+([^\n]+)(\n {2}[^-][ ]*([^\n]+))*', output):
@@ -40,7 +40,8 @@ def test_compile_with_option(binary: str, option: str) -> Tuple[int, str]:
     # compile a test program to check if the parameter works
     tmpdir = tempfile.TemporaryDirectory()
     proc = subprocess.Popen([binary, '-x', 'c++'] + options + ['-'],
-                            stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, cwd=tmpdir.name)
+                            stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                            stderr=subprocess.PIPE, cwd=tmpdir.name)
     proc.stdin.write('int main() {}\n'.encode('utf-8'))
     proc.stdin.close()
     proc.wait()
@@ -101,9 +102,9 @@ def process(binary: str):
         print(f'[{progress:3.0f}%] {option:<{max_option_len}} ', end='', flush=True)
 
         # remove redundant options
-        m = re.findall(r"Same as '?(-[^ ']+)", help_strings.get(option, ''))
-        if len(m) and '=' in m[0]:
-            print(colored(f'✘ duplicate of {m[0]}', 'blue'))
+        match = re.findall(r"Same as '?(-[^ ']+)", help_strings.get(option, ''))
+        if len(match) and '=' in match[0]:
+            print(colored(f'✘ duplicate of {match[0]}', 'blue'))
             continue
 
         # remove options that just disable other options
@@ -121,29 +122,29 @@ def process(binary: str):
                 continue
 
             # check if option requires another option to be given
-            m = re.findall(r"ignored without '?(-[^ ']+)", error_output)
-            if len(m):
+            match = re.findall(r"ignored without '?(-[^ ']+)", error_output)
+            if len(match):
                 # add required option to list of options to check
-                todo_options.insert(0, m[0] + ' ' + option)
-                print(colored(f'? depends on {m[0]}; trying next', 'yellow'))
+                todo_options.insert(0, match[0] + ' ' + option)
+                print(colored(f'? depends on {match[0]}; trying next', 'yellow'))
                 continue
 
             # use value ranges and lists
-            m = re.findall(r'=[<\[]([^>\]]+)[>\]]', option)
-            if len(m):
+            match = re.findall(r'=[<\[]([^>\]]+)[>\]]', option)
+            if len(match):
                 base, _ = option.split('=')
 
                 # value range (take upper bound)
-                if ',' in m[0]:
-                    _, upper = m[0].split(',')
+                if ',' in match[0]:
+                    _, upper = match[0].split(',')
                     todo_options.insert(0, base + '=' + upper)
-                    print(colored(f'? expects argument from <{m[0]}>; trying next', 'yellow'))
+                    print(colored(f'? expects argument from <{match[0]}>; trying next', 'yellow'))
                     continue
 
                 # value list (take last element)
-                if '|' in m[0]:
-                    todo_options.insert(0, base + '=' + m[0].split('|')[-1])
-                    print(colored(f'? expects argument from [{m[0]}]; trying next', 'yellow'))
+                if '|' in match[0]:
+                    todo_options.insert(0, base + '=' + match[0].split('|')[-1])
+                    print(colored(f'? expects argument from [{match[0]}]; trying next', 'yellow'))
                     continue
 
             print(colored('✘ error', 'red'))
@@ -190,7 +191,8 @@ def process(binary: str):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Collect GCC C++ warning options.')
-    parser.add_argument('BINARY', help='path to the g++ binary (default: g++)', default='g++', type=str, nargs='?')
+    parser.add_argument('BINARY', help='path to the g++ binary (default: g++)',
+                        default='g++', type=str, nargs='?')
 
     args = parser.parse_args()
 
