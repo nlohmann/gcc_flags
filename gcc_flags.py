@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+"""
+gcc_flags - when `-Wall` is not enough
+"""
 
 import argparse
 import re
@@ -69,6 +72,7 @@ def get_all_options(binary: str) -> List[str]:
 
 
 class EvaluatedOption:
+    """an evaluated option with help text"""
     def __init__(self):
         self.option = ''  # type: str
         self.help = ''  # type: str
