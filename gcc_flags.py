@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import re
 import subprocess
@@ -75,7 +77,7 @@ class EvaluatedOption:
         self.error = None  # type: Optional[str]
 
     def __repr__(self):
-        result = '{option:50} {help}'.format(option=self.option, help=self.help)
+        result = f'{self.option:50} {self.help}'
 
         if self.error:
             result += '\n ' + self.error
@@ -95,16 +97,14 @@ def process(binary: str):
     while len(todo_options) > 0:
         option = todo_options.pop(0)
 
-        print('[{progress:3.0f}%] {option:<{max_option_len}} '.format(
-            progress=(total_options-len(todo_options))/total_options*100, option=option, max_option_len=max_option_len
-        ), end='', flush=True)
+        progress = (total_options - len(todo_options)) / total_options * 100
+        print(f'[{progress:3.0f}%] {option:<{max_option_len}} ', end='', flush=True)
 
         # remove redundant options
         m = re.findall(r"Same as '?(-[^ ']+)", help_strings.get(option, ''))
-        if len(m):
-            if '=' in m[0]:
-                print(colored('✘ duplicate of {option}'.format(option=m[0]), 'blue'))
-                continue
+        if len(m) and '=' in m[0]:
+            print(colored(f'✘ duplicate of {m[0]}', 'blue'))
+            continue
 
         # remove options that just disable other options
         if help_strings.get(option, '').startswith('Disable'):
@@ -117,7 +117,7 @@ def process(binary: str):
             # ignore options that do not work with C++
             if 'not for C++' in error_output:
                 error_msg = error_output[error_output.index('is valid') + 3:]
-                print(colored('✘ {error_msg}'.format(error_msg=error_msg), 'red'))
+                print(colored(f'✘ {error_msg}', 'red'))
                 continue
 
             # check if option requires another option to be given
@@ -125,7 +125,7 @@ def process(binary: str):
             if len(m):
                 # add required option to list of options to check
                 todo_options.insert(0, m[0] + ' ' + option)
-                print(colored('? depends on {option}; trying next'.format(option=m[0]), 'yellow'))
+                print(colored(f'? depends on {m[0]}; trying next', 'yellow'))
                 continue
 
             # use value ranges and lists
@@ -137,13 +137,13 @@ def process(binary: str):
                 if ',' in m[0]:
                     _, upper = m[0].split(',')
                     todo_options.insert(0, base + '=' + upper)
-                    print(colored('? expects argument from <{values}>; trying next'.format(values=m[0]), 'yellow'))
+                    print(colored(f'? expects argument from <{m[0]}>; trying next', 'yellow'))
                     continue
 
                 # value list (take last element)
                 if '|' in m[0]:
                     todo_options.insert(0, base + '=' + m[0].split('|')[-1])
-                    print(colored('? expects argument from [{values}]; trying next'.format(values=m[0]), 'yellow'))
+                    print(colored(f'? expects argument from [{m[0]}]; trying next', 'yellow'))
                     continue
 
             print(colored('✘ error', 'red'))
