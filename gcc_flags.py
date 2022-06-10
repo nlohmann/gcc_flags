@@ -37,13 +37,13 @@ def test_compile_with_option(binary: str, option: str) -> Tuple[int, str]:
     options = option.split()
 
     # compile a test program to check if the parameter works
-    tmpdir = tempfile.TemporaryDirectory()
-    with subprocess.Popen([binary, '-x', 'c++'] + options + ['-'],
-                          stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
-                          stderr=subprocess.PIPE, cwd=tmpdir.name) as proc:
-        proc.stdin.write('int main() {}\n'.encode('utf-8'))
-        proc.stdin.close()
-        error_output = proc.stderr.read().decode('utf-8').strip()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with subprocess.Popen([binary, '-x', 'c++'] + options + ['-'],
+                              stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                              stderr=subprocess.PIPE, cwd=tmpdir) as proc:
+            proc.stdin.write('int main() {}\n'.encode('utf-8'))
+            proc.stdin.close()
+            error_output = proc.stderr.read().decode('utf-8').strip()
 
     return proc.returncode, error_output
 
@@ -86,7 +86,7 @@ class EvaluatedOption:
 def process(binary: str):
     help_strings = get_help_strings(binary)
     all_options = get_all_options(binary)
-    max_option_len = max([len(option) for option in all_options])
+    max_option_len = max(len(option) for option in all_options)
 
     evaluated_options = []  # type: List[EvaluatedOption]
     todo_options = list(sorted(all_options))
@@ -177,12 +177,12 @@ def process(binary: str):
 
     print()
 
-    for option in sorted([x for x in evaluated_options if x.error is None], key=lambda x: x.option):
+    for option in sorted([x for x in evaluated_options if not x.error], key=lambda x: x.option):
         print(option)
 
     print()
 
-    for option in sorted([x for x in evaluated_options if x.error is not None], key=lambda x: x.option):
+    for option in sorted([x for x in evaluated_options if x.error], key=lambda x: x.option):
         print(option)
 
 
