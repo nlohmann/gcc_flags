@@ -14,10 +14,9 @@ from termcolor import colored
 
 def get_help_strings(binary: str) -> Dict[str, str]:
     # collect all warnings from g++
-    proc = subprocess.Popen([binary, '--help=warnings'],
-                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-    proc.wait()
-    output = proc.stdout.read().decode('utf-8')
+    with subprocess.Popen([binary, '--help=warnings'],
+                          stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) as proc:
+        output = proc.stdout.read().decode('utf-8')
 
     result = {}  # type: Dict[str, str]
 
@@ -39,23 +38,21 @@ def test_compile_with_option(binary: str, option: str) -> Tuple[int, str]:
 
     # compile a test program to check if the parameter works
     tmpdir = tempfile.TemporaryDirectory()
-    proc = subprocess.Popen([binary, '-x', 'c++'] + options + ['-'],
-                            stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
-                            stderr=subprocess.PIPE, cwd=tmpdir.name)
-    proc.stdin.write('int main() {}\n'.encode('utf-8'))
-    proc.stdin.close()
-    proc.wait()
+    with subprocess.Popen([binary, '-x', 'c++'] + options + ['-'],
+                          stdin=subprocess.PIPE, stdout=subprocess.DEVNULL,
+                          stderr=subprocess.PIPE, cwd=tmpdir.name) as proc:
+        proc.stdin.write('int main() {}\n'.encode('utf-8'))
+        proc.stdin.close()
+        error_output = proc.stderr.read().decode('utf-8').strip()
 
-    error_output = proc.stderr.read().decode('utf-8').strip()
     return proc.returncode, error_output
 
 
 def get_all_options(binary: str) -> List[str]:
     # collect all warnings from g++
-    proc = subprocess.Popen([binary, '-Q', '--help=warnings'],
-                            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-    proc.wait()
-    output = proc.stdout.read().decode('utf-8')
+    with subprocess.Popen([binary, '-Q', '--help=warnings'],
+                          stdout=subprocess.PIPE, stderr=subprocess.DEVNULL) as proc:
+        output = proc.stdout.read().decode('utf-8')
 
     result = []  # type: List[str]
 
@@ -73,8 +70,8 @@ def get_all_options(binary: str) -> List[str]:
 
 class EvaluatedOption:
     def __init__(self):
-        self.option = ''   # type: str
-        self.help = ''     # type: str
+        self.option = ''  # type: str
+        self.help = ''  # type: str
         self.error = None  # type: Optional[str]
 
     def __repr__(self):
@@ -150,43 +147,43 @@ def process(binary: str):
             print(colored('✘ error', 'red'))
 
             # create entry for failed option
-            ec = EvaluatedOption()
-            ec.option = option
-            ec.help = help_strings.get(option, '')
-            ec.error = error_output
-            evaluated_options.append(ec)
+            evaluated_option = EvaluatedOption()
+            evaluated_option.option = option
+            evaluated_option.help = help_strings.get(option, '')
+            evaluated_option.error = error_output
+            evaluated_options.append(evaluated_option)
 
         else:
             print(colored('✔ works', 'green'))
 
-            ec = EvaluatedOption()
-            ec.option = option
+            evaluated_option = EvaluatedOption()
+            evaluated_option.option = option
 
             # if multiple options are given, use the last one to look up the help string
             option_list = option.split()
             if len(option_list) > 1:
-                ec.help = help_strings.get(option_list[-1])
+                evaluated_option.help = help_strings.get(option_list[-1])
             else:
-                ec.help = help_strings.get(option)
+                evaluated_option.help = help_strings.get(option)
 
             # if the option contains a =, we need to put more effort into looking up the help string
             if '=' in option:
                 for help_option, help_string in help_strings.items():
                     if help_option.startswith(option.split('=')[0] + '='):
-                        ec.help = help_string
+                        evaluated_option.help = help_string
                         break
 
-            evaluated_options.append(ec)
+            evaluated_options.append(evaluated_option)
 
     print()
 
-    for o in sorted([x for x in evaluated_options if x.error is None], key=lambda x: x.option):
-        print(o)
+    for option in sorted([x for x in evaluated_options if x.error is None], key=lambda x: x.option):
+        print(option)
 
     print()
 
-    for o in sorted([x for x in evaluated_options if x.error is not None], key=lambda x: x.option):
-        print(o)
+    for option in sorted([x for x in evaluated_options if x.error is not None], key=lambda x: x.option):
+        print(option)
 
 
 if __name__ == '__main__':
