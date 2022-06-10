@@ -10,7 +10,6 @@ import tempfile
 from typing import Dict, List, Optional, Tuple
 
 from termcolor import colored
-import tqdm
 
 
 # TODO: Help for -Wstringop-overflow is not properly collected.
@@ -97,23 +96,23 @@ def process(binary: str):
 
     evaluated_options = []  # type: List[EvaluatedOption]
     todo_options = list(sorted(all_options))
-    bar = tqdm.tqdm(total=len(all_options), leave=False, unit='flags')
+    total_options = len(all_options)
 
     while len(todo_options) > 0:
         option = todo_options.pop(0)
 
-        bar.update()
-        bar.write(f'{option:<{max_option_len}} ', end='')
+        progress = (total_options - len(todo_options)) / total_options * 100
+        print(f'[{progress:3.0f}%] {option:<{max_option_len}} ', end='', flush=True)
 
         # remove redundant options
         match = re.findall(r"Same as '?(-[^ ']+)", help_strings.get(option, ''))
         if len(match) and '=' in match[0]:
-            bar.write(colored(f'✘ duplicate of {match[0]}', 'blue'))
+            print(colored(f'✘ duplicate of {match[0]}', 'blue'))
             continue
 
         # remove options that just disable other options
         if help_strings.get(option, '').startswith('Disable'):
-            bar.write(colored('✘ disables a warning', 'blue'))
+            print(colored('✘ disables a warning', 'blue'))
             continue
 
         return_code, error_output = test_compile_with_option(binary, option)
@@ -122,7 +121,7 @@ def process(binary: str):
             # ignore options that do not work with C++
             if 'not for C++' in error_output:
                 error_msg = error_output[error_output.index('is valid') + len('is '):]
-                bar.write(colored(f'✘ {error_msg}', 'red'))
+                print(colored(f'✘ {error_msg}', 'red'))
                 continue
 
             # check if option requires another option to be given
@@ -130,8 +129,7 @@ def process(binary: str):
             if len(match):
                 # add required option to list of options to check
                 todo_options.insert(0, match[0] + ' ' + option)
-                bar.total += 1
-                bar.write(colored(f'? depends on {match[0]}; trying next', 'yellow'))
+                print(colored(f'? depends on {match[0]}; trying next', 'yellow'))
                 continue
 
             # use value ranges and lists
@@ -143,18 +141,16 @@ def process(binary: str):
                 if ',' in match[0]:
                     _, upper = match[0].split(',')
                     todo_options.insert(0, base + '=' + upper)
-                    bar.total += 1
-                    bar.write(colored(f'? expects argument from <{match[0]}>; trying next', 'yellow'))
+                    print(colored(f'? expects argument from <{match[0]}>; trying next', 'yellow'))
                     continue
 
                 # value list (take last element)
                 if '|' in match[0]:
                     todo_options.insert(0, base + '=' + match[0].split('|')[-1])
-                    bar.total += 1
-                    bar.write(colored(f'? expects argument from [{match[0]}]; trying next', 'yellow'))
+                    print(colored(f'? expects argument from [{match[0]}]; trying next', 'yellow'))
                     continue
 
-            bar.write(colored('✘ error', 'red'))
+            print(colored('✘ error', 'red'))
 
             # create entry for failed option
             evaluated_option = EvaluatedOption()
@@ -164,7 +160,7 @@ def process(binary: str):
             evaluated_options.append(evaluated_option)
 
         else:
-            bar.write(colored('✔ works', 'green'))
+            print(colored('✔ works', 'green'))
 
             evaluated_option = EvaluatedOption()
             evaluated_option.option = option
