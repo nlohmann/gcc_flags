@@ -192,7 +192,7 @@ def process(binary: str):
         print(option)
 
 
-if __name__ == '__main__':
+def run():
     parser = argparse.ArgumentParser(description='Collect GCC C++ warning options.')
     parser.add_argument('BINARY', help='path to the g++ binary (default: g++)',
                         default='g++', type=str, nargs='?')
