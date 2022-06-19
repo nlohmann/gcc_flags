@@ -17,10 +17,12 @@ jobs:
     - name: Build package
       run: |
         python -m pip install --upgrade pip
-        python -m pip install pip-tools twine build
+        python -m pip install pip-tools twine build pytest
         python -m build
         twine check dist/*
     - name: Run gcc_flags
       run: |
         python -m pip install -e .
-        gcc_flags
+        gcc_flags --help
+        gcc_flags --version
+        pytest
