@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "gcc_flags"
 version = "0.1.0"
-description = "Read the latest Real Python tutorials"
+description = "Collect all possible C++ warning flags from GCC"
 readme = "README.md"
 authors = [{ name = "Niels Lohmann", email = "mail@nlohmann.me" }]
 license = { file = "LICENSE" }
@@ -20,7 +20,7 @@ classifiers = [
 dependencies = [
     "termcolor >= 1.1.0"
 ]
-requires-python = ">=3.6"
+requires-python = ">=3.7"
 
 [project.urls]
 Homepage = "https://github.com/nlohmann/gcc_flags"
@@ -31,7 +31,7 @@ gcc_flags = "gcc_flags.__main__:main"
 [tool.bumpver]
 current_version = "0.1.0"
 version_pattern = "MAJOR.MINOR.PATCH"
-commit_message  = "Bump version {old_version} -> {new_version}"
+commit_message  = ":bookmark: bump version {old_version} -> {new_version}"
 commit          = true
 tag             = true
 push            = false
