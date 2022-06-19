@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gcc_flags"
+version = "0.1.0"
+description = "Read the latest Real Python tutorials"
+readme = "README.md"
+authors = [{ name = "Niels Lohmann", email = "mail@nlohmann.me" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: C++",
+    "Topic :: Software Development :: Compilers"
+]
+dependencies = [
+    "termcolor >= 1.1.0"
+]
+requires-python = ">=3.6"
+
+[project.urls]
+Homepage = "https://github.com/nlohmann/gcc_flags"
+
+[project.scripts]
+gcc_flags = "gcc_flags.__main__:main"
+
+[tool.bumpver]
+current_version = "0.1.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message  = "Bump version {old_version} -> {new_version}"
+commit          = true
+tag             = true
+push            = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"src/gcc_flags/__init__.py" = ["{version}"]

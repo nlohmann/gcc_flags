@@ -1,4 +1,4 @@
-name: Pylint
+name: Package
 
 on: [push]
 
@@ -7,19 +7,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.6", "3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Build package
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install coverage
+        python -m pip install pip-tools twine build
+        python -m build
+        twine check dist/*
     - name: Run gcc_flags
       run: |
-        coverage run --branch gcc_flags.py
-        coverage report -m
+        python -m pip install -e .
+        gcc_flags
