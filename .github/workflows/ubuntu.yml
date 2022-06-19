@@ -1,4 +1,4 @@
-name: Pylint
+name: Package
 
 on: [push]
 
