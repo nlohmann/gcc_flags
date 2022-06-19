@@ -14,10 +14,14 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
+    - name: Build package
       run: |
         python -m pip install --upgrade pip
-        python setup.py install
+        python -m pip install pip-tools twine build
+        pip-compile pyproject.toml
+        python -m build
+        twine check dist/*
     - name: Run gcc_flags
       run: |
+        python -m pip install -e .
         gcc_flags

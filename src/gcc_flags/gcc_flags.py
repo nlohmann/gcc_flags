@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""
-gcc_flags - when `-Wall` is not enough
-"""
 
-import argparse
 import re
 import subprocess
 import tempfile
@@ -190,13 +186,3 @@ def process(binary: str):
 
     for option in sorted([x for x in evaluated_options if x.error], key=lambda x: x.option):
         print(option)
-
-
-def run():
-    parser = argparse.ArgumentParser(description='Collect GCC C++ warning options.')
-    parser.add_argument('BINARY', help='path to the g++ binary (default: g++)',
-                        default='g++', type=str, nargs='?')
-
-    args = parser.parse_args()
-
-    process(args.BINARY)

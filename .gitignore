@@ -1,6 +1,4 @@
 /venv/
 /.idea/
-.coverage
-/build/
 /dist/
-/gcc_flags.egg-info/
+/src/gcc_flags.egg-info/
