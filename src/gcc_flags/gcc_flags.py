@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
-
 import re
 import subprocess
+import sys
 import tempfile
 from typing import Dict, List, Optional, Tuple
 
@@ -9,6 +8,7 @@ from termcolor import colored
 
 
 # TODO: Help for -Wstringop-overflow is not properly collected.
+# TODO: Helo for -Wsuggest-attribute=malloc is not properly collected (uses that of -Wsuggest-attribute=cold)
 
 
 def get_help_strings(binary: str) -> Dict[str, str]:
@@ -69,6 +69,7 @@ def get_all_options(binary: str) -> List[str]:
 
 class EvaluatedOption:
     """an evaluated option with help text"""
+
     def __init__(self):
         self.option = ''  # type: str
         self.help = ''  # type: str
@@ -82,8 +83,13 @@ class EvaluatedOption:
 
         return result
 
+    def __iter__(self):
+        yield 'flag', self.option
+        yield 'help', self.help
+        yield 'error', self.error
 
-def process(binary: str):
+
+def process(binary: str) -> List[EvaluatedOption]:
     """collect all working warnings from g++"""
 
     help_strings = get_help_strings(binary)
@@ -98,17 +104,17 @@ def process(binary: str):
         option = todo_options.pop(0)
 
         progress = (total_options - len(todo_options)) / total_options * 100
-        print(f'[{progress:3.0f}%] {option:<{max_option_len}} ', end='', flush=True)
+        print(f'[{progress:3.0f}%] {option:<{max_option_len}} ', end='', file=sys.stderr, flush=True)
 
         # remove redundant options
         match = re.findall(r"Same as '?(-[^ ']+)", help_strings.get(option, ''))
         if len(match) and '=' in match[0]:
-            print(colored(f'✘ duplicate of {match[0]}', 'blue'))
+            print(colored(f'✘ duplicate of {match[0]}', 'blue'), file=sys.stderr)
             continue
 
         # remove options that just disable other options
         if help_strings.get(option, '').startswith('Disable'):
-            print(colored('✘ disables a warning', 'blue'))
+            print(colored('✘ disables a warning', 'blue'), file=sys.stderr)
             continue
 
         return_code, error_output = test_compile_with_option(binary, option)
@@ -117,7 +123,7 @@ def process(binary: str):
             # ignore options that do not work with C++
             if 'not for C++' in error_output:
                 error_msg = error_output[error_output.index('is valid') + len('is '):]
-                print(colored(f'✘ {error_msg}', 'red'))
+                print(colored(f'✘ {error_msg}', 'red'), file=sys.stderr)
                 continue
 
             # check if option requires another option to be given
@@ -125,7 +131,7 @@ def process(binary: str):
             if len(match):
                 # add required option to list of options to check
                 todo_options.insert(0, match[0] + ' ' + option)
-                print(colored(f'? depends on {match[0]}; trying next', 'yellow'))
+                print(colored(f'? depends on {match[0]}; trying next', 'yellow'), file=sys.stderr)
                 continue
 
             # use value ranges and lists
@@ -137,16 +143,16 @@ def process(binary: str):
                 if ',' in match[0]:
                     _, upper = match[0].split(',')
                     todo_options.insert(0, base + '=' + upper)
-                    print(colored(f'? expects argument from <{match[0]}>; trying next', 'yellow'))
+                    print(colored(f'? expects argument from <{match[0]}>; trying next', 'yellow'), file=sys.stderr)
                     continue
 
                 # value list (take last element)
                 if '|' in match[0]:
                     todo_options.insert(0, base + '=' + match[0].split('|')[-1])
-                    print(colored(f'? expects argument from [{match[0]}]; trying next', 'yellow'))
+                    print(colored(f'? expects argument from [{match[0]}]; trying next', 'yellow'), file=sys.stderr)
                     continue
 
-            print(colored('✘ error', 'red'))
+            print(colored('✘ error', 'red'), file=sys.stderr)
 
             # create entry for failed option
             evaluated_option = EvaluatedOption()
@@ -156,7 +162,7 @@ def process(binary: str):
             evaluated_options.append(evaluated_option)
 
         else:
-            print(colored('✔ works', 'green'))
+            print(colored('✔ works', 'green'), file=sys.stderr)
 
             evaluated_option = EvaluatedOption()
             evaluated_option.option = option
@@ -177,12 +183,4 @@ def process(binary: str):
 
             evaluated_options.append(evaluated_option)
 
-    print()
-
-    for option in sorted([x for x in evaluated_options if not x.error], key=lambda x: x.option):
-        print(option)
-
-    print()
-
-    for option in sorted([x for x in evaluated_options if x.error], key=lambda x: x.option):
-        print(option)
+    return evaluated_options

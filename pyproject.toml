@@ -33,7 +33,7 @@ current_version = "0.1.1"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message  = ":bookmark: bump version {old_version} -> {new_version}"
 commit          = true
-tag             = true
+tag             = false
 push            = false
 
 [tool.bumpver.file_patterns]
