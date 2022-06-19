@@ -19,6 +19,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pip-tools twine build
         pip-compile pyproject.toml
+        pip-sync
         python -m build
         twine check dist/*
     - name: Run gcc_flags
