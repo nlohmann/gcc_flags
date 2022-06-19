@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Collect all possible C++ warning flags from GCC"
 readme = "README.md"
 authors = [{ name = "Niels Lohmann", email = "mail@nlohmann.me" }]
-license = "MIT"
+license = { text = "LICENSE" }
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
