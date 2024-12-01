@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0.0", "wheel"]
+requires = ["setuptools>=75.6.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Software Development :: Compilers"
 ]
 dependencies = [
-    "termcolor >= 1.1.0"
+    "termcolor >= 2.5.0"
 ]
 requires-python = ">=3.7"
 
