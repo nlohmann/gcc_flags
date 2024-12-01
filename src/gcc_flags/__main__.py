@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import argparse
-from typing import List
-from gcc_flags import process, __version__, EvaluatedOption
 import json
+from typing import List
+
+from gcc_flags import EvaluatedOption, __version__, process
 
 
 def console_output(evaluated_options: List[EvaluatedOption]):
@@ -17,6 +18,7 @@ def console_output(evaluated_options: List[EvaluatedOption]):
     for option in sorted([x for x in evaluated_options if x.error], key=lambda x: x.option):
         print(option)
 
+
 def json_output(evaluated_options: List[EvaluatedOption]):
     result = []
     for option in sorted([x for x in evaluated_options], key=lambda x: x.option):
@@ -26,11 +28,10 @@ def json_output(evaluated_options: List[EvaluatedOption]):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog='gcc_flags', description='Collect GCC C++ warning options.')
-    parser.add_argument('BINARY', help='path to the g++ binary (default: g++)',
-                        default='g++', type=str, nargs='?')
-    parser.add_argument('--json', help='create JSON output for flags', action='store_true')
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
+    parser = argparse.ArgumentParser(prog="gcc_flags", description="Collect GCC C++ warning options.")
+    parser.add_argument("BINARY", help="path to the g++ binary (default: g++)", default="g++", type=str, nargs="?")
+    parser.add_argument("--json", help="create JSON output for flags", action="store_true")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
 
     args = parser.parse_args()
 

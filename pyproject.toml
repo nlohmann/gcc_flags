@@ -39,3 +39,13 @@ push            = false
 [tool.bumpver.file_patterns]
 "pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
 "src/gcc_flags/__init__.py" = ["{version}"]
+
+[tool.black]
+    line-length = 120
+    target-version = ['py311']
+    preview = true
+
+
+[tool.isort]
+    profile = "black"
+    balanced_wrapping = true
