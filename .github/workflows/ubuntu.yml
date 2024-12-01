@@ -28,7 +28,7 @@ jobs:
         coverage run -m pytest
         coverage report -m
 
-  GCC output:
+  gcc_output:
     runs-on: ubuntu-latest
     container: gcc:latest
     steps:
