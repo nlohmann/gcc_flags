@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -21,8 +21,7 @@ jobs:
         python -m build
         twine check dist/*
     - name: Install gcc_flags
-      run: |
-        python -m pip install -e .
+      run: python -m pip install -e .
     - name: Test
       run: |
         coverage run -m pytest
@@ -40,11 +39,11 @@ jobs:
      - name: Build package
        run: |
          python -m pip install --upgrade pip
-         python -m pip install pip-tools twine build
+         python -m pip install pip-tools build
          python -m build
      - name: Install gcc_flags
-       run: |
-         python -m pip install -e .
+       run: python -m pip install -e .
      - name: Collect GCC flags
-       run: |
-         gcc_flags g++
+       run: gcc_flags g++
+     - name: Collect GCC flags (JSON)
+       run: gcc_flags g++ --json
