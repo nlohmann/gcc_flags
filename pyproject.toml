@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Software Development :: Compilers"
 ]
 dependencies = [
-    "termcolor >= 2.5.0"
+    "termcolor >= 2.4.0"
 ]
 requires-python = ">=3.7"
 
