@@ -35,18 +35,16 @@ def test_compile_with_option(binary: str, option: str) -> Tuple[int, str]:
     options = option.split()
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        with subprocess.Popen(
+        # g++ may exit before reading stdin (e.g., "missing argument to '-Wabi='"); run() ignores the broken pipe
+        proc = subprocess.run(
             [binary, "-x", "c++"] + options + ["-"],
-            stdin=subprocess.PIPE,
+            input="int main() {}\n".encode("utf-8"),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
             cwd=tmpdir,
-        ) as proc:
-            proc.stdin.write("int main() {}\n".encode("utf-8"))
-            proc.stdin.close()
-            error_output = proc.stderr.read().decode("utf-8").strip()
+        )
 
-    return proc.returncode, error_output
+    return proc.returncode, proc.stderr.decode("utf-8").strip()
 
 
 def get_all_options(binary: str) -> List[str]:
